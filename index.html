@@ -1,0 +1,1101 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LMS Pelatihan Pembelajaran Mendalam (PM) - Nanang Setiawan, ST</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- SheetJS CDN (Ekspor Excel) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            warm: {
+              50: '#fffbeb',
+              100: '#fef3c7',
+              200: '#fde68a',
+              500: '#f59e0b',
+              600: '#d97706',
+              700: '#b45309',
+              800: '#92400e',
+              900: '#78350f'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { background-color: #fffdf5; color: #1e293b; font-family: 'Inter', system-ui, sans-serif; }
+    .card-yellow { background: #ffffff; border: 1px solid #fde68a; box-shadow: 0 4px 10px -2px rgba(245, 158, 11, 0.08); }
+    .card-yellow:hover { border-color: #f59e0b; }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between bg-amber-50/40">
+
+  <!-- NAVBAR HEADER -->
+  <header class="bg-amber-800 text-white sticky top-0 z-50 shadow-md">
+    <div class="max-w-7xl mx-auto px-4 py-3.5 flex justify-between items-center">
+      <div class="flex items-center space-x-3 cursor-pointer" onclick="showView('auth-view')">
+        <div class="w-10 h-10 rounded-xl bg-amber-600 flex items-center justify-center text-amber-100 font-bold text-xl shadow-inner border border-amber-500">
+          <i class="fa-solid fa-book-open-reader"></i>
+        </div>
+        <div>
+          <h1 class="font-bold text-lg text-amber-50 leading-tight">LMS Pembelajaran Mendalam <span class="text-amber-300">(PM)</span></h1>
+          <p class="text-xs text-amber-200/80">Pengembang: Nanang Setiawan, ST | Deep Learning Education</p>
+        </div>
+      </div>
+      <nav class="hidden md:flex space-x-4 text-sm font-medium">
+        <button onclick="showView('auth-view')" class="hover:text-amber-200 transition flex items-center gap-1.5"><i class="fa-solid fa-right-to-bracket"></i> Akses Portal</button>
+        <button onclick="showView('student-dashboard')" class="hover:text-amber-200 transition flex items-center gap-1.5"><i class="fa-solid fa-graduation-cap"></i> Dashboard Peserta</button>
+        <button onclick="showView('admin-dashboard')" class="hover:text-amber-200 transition flex items-center gap-1.5"><i class="fa-solid fa-user-shield"></i> Panel Admin</button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- MAIN CONTAINER -->
+  <main class="max-w-7xl mx-auto px-4 py-8 flex-grow w-full">
+
+    <!-- 1. PORTAL AKSESIBILITAS (LOGIN, REGISTRASI & ADMIN) -->
+    <section id="auth-view" class="max-w-md mx-auto card-yellow p-6 rounded-2xl shadow-lg border-t-4 border-t-amber-500 transition-all">
+      <div class="text-center mb-6">
+        <div class="w-16 h-16 rounded-2xl bg-amber-100 text-amber-700 flex items-center justify-center mx-auto mb-3 text-3xl shadow-sm border border-amber-200">
+          <i class="fa-solid fa-lightbulb"></i>
+        </div>
+        <h2 class="text-2xl font-bold text-amber-900">Pelatihan Pembelajaran Mendalam</h2>
+        <p class="text-xs font-semibold text-amber-700/90 mt-1">Dirancang Oleh: Nanang Setiawan, ST</p>
+      </div>
+
+      <!-- Tab Navigation -->
+      <div class="flex bg-amber-100/70 rounded-xl p-1 mb-6 text-xs font-bold border border-amber-200">
+        <button id="tab-login-btn" onclick="switchAuthTab('login')" class="flex-1 py-2 rounded-lg bg-amber-600 text-white shadow-sm">Login Peserta</button>
+        <button id="tab-reg-btn" onclick="switchAuthTab('reg')" class="flex-1 py-2 rounded-lg text-amber-800 hover:text-amber-900">Daftar Baru</button>
+        <button id="tab-admin-btn" onclick="switchAuthTab('admin')" class="flex-1 py-2 rounded-lg text-amber-800 hover:text-amber-900">Akses Admin</button>
+      </div>
+
+      <!-- Form Login Peserta (Hanya User & Password) -->
+      <form id="form-login" onsubmit="handleStudentLogin(event)" class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-amber-900 mb-1">User (Username)</label>
+          <input id="login-user" type="text" placeholder="Masukkan Username terdaftar" required class="w-full bg-amber-50/50 border border-amber-300 rounded-lg px-3 py-2 text-sm text-slate-800 focus:outline-none focus:border-amber-600 focus:bg-white">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-amber-900 mb-1">Password</label>
+          <input id="login-pass" type="password" placeholder="••••••••" required class="w-full bg-amber-50/50 border border-amber-300 rounded-lg px-3 py-2 text-sm text-slate-800 focus:outline-none focus:border-amber-600 focus:bg-white">
+        </div>
+        <button type="submit" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-bold py-2.5 rounded-lg transition shadow-md flex items-center justify-center gap-2">
+          <i class="fa-solid fa-right-to-bracket"></i> Masuk ke Pelatihan
+        </button>
+      </form>
+
+      <!-- Form Registrasi Peserta (Nama Lengkap, User, Password) -->
+      <form id="form-reg" onsubmit="handleRegistration(event)" class="space-y-4 hidden">
+        <div>
+          <label class="block text-xs font-semibold text-amber-900 mb-1">Nama Lengkap</label>
+          <input id="reg-nama" type="text" placeholder="Masukkan Nama Lengkap & Gelar" required class="w-full bg-amber-50/50 border border-amber-300 rounded-lg px-3 py-2 text-sm text-slate-800 focus:outline-none focus:border-amber-600 focus:bg-white">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-amber-900 mb-1">User (Username Akun)</label>
+          <input id="reg-user" type="text" placeholder="Buat username (cth: gurubudi)" required class="w-full bg-amber-50/50 border border-amber-300 rounded-lg px-3 py-2 text-sm text-slate-800 focus:outline-none focus:border-amber-600 focus:bg-white">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-amber-900 mb-1">Password</label>
+          <input id="reg-pass" type="password" placeholder="Buat password akun Anda" required class="w-full bg-amber-50/50 border border-amber-300 rounded-lg px-3 py-2 text-sm text-slate-800 focus:outline-none focus:border-amber-600 focus:bg-white">
+        </div>
+        <button type="submit" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-bold py-2.5 rounded-lg transition shadow-md flex items-center justify-center gap-2">
+          <i class="fa-solid fa-user-plus"></i> Daftar Sebagai Peserta
+        </button>
+      </form>
+
+      <!-- Form Login Admin (Kredensial disembunyikan total) -->
+      <form id="form-admin" onsubmit="handleAdminLogin(event)" class="space-y-4 hidden">
+        <div class="p-3 bg-amber-100 border border-amber-300 rounded-xl text-amber-900 text-xs mb-3 flex items-center gap-2">
+          <i class="fa-solid fa-shield-halved text-amber-700 text-lg"></i>
+          <span>Otorisasi Pengelola LMS: <strong>Nanang Setiawan, ST</strong></span>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-amber-900 mb-1">User Admin</label>
+          <input id="admin-user" type="text" placeholder="Masukkan User Admin" required class="w-full bg-amber-50/50 border border-amber-300 rounded-lg px-3 py-2 text-sm text-slate-800 focus:outline-none focus:border-amber-600 focus:bg-white">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-amber-900 mb-1">Password Otorisasi</label>
+          <input id="admin-pass" type="password" placeholder="••••••••" required class="w-full bg-amber-50/50 border border-amber-300 rounded-lg px-3 py-2 text-sm text-slate-800 focus:outline-none focus:border-amber-600 focus:bg-white">
+        </div>
+        <button type="submit" class="w-full bg-amber-800 hover:bg-amber-900 text-white font-bold py-2.5 rounded-lg transition shadow-md flex items-center justify-center gap-2">
+          <i class="fa-solid fa-lock"></i> Masuk Panel Admin
+        </button>
+      </form>
+    </section>
+
+    <!-- 2. DASHBOARD GURU / ADMIN -->
+    <section id="admin-dashboard" class="space-y-6 hidden">
+      <div class="flex justify-between items-center border-b border-amber-200 pb-4">
+        <div>
+          <h2 class="text-2xl font-bold text-amber-900"><i class="fa-solid fa-chart-line text-amber-600 mr-2"></i>Panel Monitoring & Rekam Aktivitas Admin</h2>
+          <p class="text-sm text-amber-700/80">Pengelola: <strong>Nanang Setiawan, ST</strong> | Pelatihan Pembelajaran Mendalam (PM)</p>
+        </div>
+        <button onclick="adminLogout()" class="bg-red-50 text-red-600 border border-red-200 px-3.5 py-1.5 rounded-lg text-xs font-bold hover:bg-red-100 transition"><i class="fa-solid fa-right-from-bracket mr-1"></i> Keluar Admin</button>
+      </div>
+
+      <!-- Kartu Statistik -->
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div class="card-yellow p-4 rounded-xl border-l-4 border-l-amber-600">
+          <p class="text-xs text-amber-800 font-medium">Total Peserta Terdaftar</p>
+          <p id="stat-total-peserta" class="text-3xl font-bold text-amber-900">0</p>
+          <p class="text-[11px] text-amber-600 mt-1"><i class="fa-solid fa-users mr-1"></i> Peserta Pelatihan PM</p>
+        </div>
+        <div class="card-yellow p-4 rounded-xl border-l-4 border-l-emerald-600">
+          <p class="text-xs text-amber-800 font-medium">Peserta Aktif Login</p>
+          <p id="stat-aktif-peserta" class="text-3xl font-bold text-emerald-700">0</p>
+          <p class="text-[11px] text-emerald-600 mt-1"><i class="fa-solid fa-circle-check mr-1"></i> Sudah Masuk LMS</p>
+        </div>
+        <div class="card-yellow p-4 rounded-xl border-l-4 border-l-amber-500">
+          <p class="text-xs text-amber-800 font-medium">Rata-rata Nilai Asesmen</p>
+          <p id="stat-avg-nilai" class="text-3xl font-bold text-amber-700">-</p>
+          <p class="text-[11px] text-amber-600 mt-1">Evaluasi Pilihan Ganda</p>
+        </div>
+        <div class="card-yellow p-4 rounded-xl border-l-4 border-l-purple-600">
+          <p class="text-xs text-amber-800 font-medium">Total Modul Diselesaikan</p>
+          <p id="stat-total-selesai" class="text-3xl font-bold text-purple-700">0</p>
+          <p class="text-[11px] text-purple-600 mt-1">Selesai Asesmen & Refleksi</p>
+        </div>
+      </div>
+
+      <!-- Tabel Data Peserta & Hasil Pekerjaan -->
+      <div class="card-yellow p-5 rounded-xl border-t-4 border-t-amber-600">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-3">
+          <div>
+            <h3 class="font-bold text-lg text-amber-900"><i class="fa-solid fa-list-check text-amber-600 mr-2"></i>Daftar Peserta & Rekapitulasi Progres</h3>
+            <p class="text-xs text-amber-700/80">Pantau penyelesaian modul, baca rekam jawaban pemantik & refleksi, serta kelola akun peserta.</p>
+          </div>
+          <button onclick="exportToExcel()" class="bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold px-4 py-2.5 rounded-lg transition shadow-md flex items-center">
+            <i class="fa-solid fa-file-excel mr-2 text-sm"></i> Ekspor Rekap Ke Excel
+          </button>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm text-left text-slate-700 border-collapse">
+            <thead class="bg-amber-100/80 text-amber-950 text-xs uppercase font-bold border-b border-amber-200">
+              <tr>
+                <th class="p-3 border-b">No</th>
+                <th class="p-3 border-b">Nama Lengkap</th>
+                <th class="p-3 border-b">User</th>
+                <th class="p-3 border-b">Akses LMS</th>
+                <th class="p-3 border-b">Progres Modul (Selesai)</th>
+                <th class="p-3 border-b">Rata-rata Nilai</th>
+                <th class="p-3 border-b text-center">Rekam Aktivitas & Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="peserta-table-body" class="divide-y divide-amber-100">
+              <!-- Data peserta dirender secara dinamis oleh JavaScript -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- Modal Detail Rekam Aktivitas Peserta untuk Admin -->
+    <div id="activity-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+      <div class="bg-white rounded-2xl max-w-3xl w-full max-h-[85vh] overflow-y-auto p-6 space-y-4 card-yellow border-2 border-amber-400 shadow-2xl">
+        <div class="flex justify-between items-center border-b border-amber-200 pb-3">
+          <div>
+            <h3 class="font-bold text-lg text-amber-900" id="modal-student-name">Rekam Aktivitas Peserta</h3>
+            <p class="text-xs text-amber-700" id="modal-student-user">Username: -</p>
+          </div>
+          <button onclick="closeActivityModal()" class="text-slate-400 hover:text-slate-600 text-xl font-bold"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div id="modal-activity-content" class="space-y-4 text-xs">
+          <!-- Detail aktivitas per bagian akan dimuat secara dinamis -->
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. DASHBOARD UTAMA PESERTA (KATALOG 8 BAGIAN PM) -->
+    <section id="student-dashboard" class="space-y-6 hidden">
+      <!-- Banner Selamat Datang -->
+      <div class="bg-gradient-to-r from-amber-800 to-amber-700 text-white p-6 rounded-2xl relative overflow-hidden shadow-md">
+        <div class="relative z-10">
+          <div class="flex justify-between items-start">
+            <span class="bg-amber-600/80 text-amber-100 text-xs font-bold px-3 py-1 rounded-full border border-amber-500">Program Pelatihan Pembelajaran Mendalam (PM)</span>
+            <button onclick="studentLogout()" class="bg-red-500/30 hover:bg-red-500/50 text-white border border-red-300/40 text-xs px-3 py-1 rounded-lg transition"><i class="fa-solid fa-right-from-bracket mr-1"></i> Keluar Peserta</button>
+          </div>
+          <h2 id="student-welcome-title" class="text-2xl font-bold text-white mt-2">Selamat Datang, Peserta Pelatihan!</h2>
+          <p class="text-sm text-amber-100 max-w-3xl mt-1">Mari kembangkan kompetensi perancangan Pembelajaran Mendalam secara Berkesadaran, Bermakna, dan Menyenangkan bersama <strong>Nanang Setiawan, ST</strong>.</p>
+          
+          <div class="mt-4 max-w-md">
+            <div class="flex justify-between text-xs text-amber-200 mb-1">
+              <span>Progres Penyelesaian Modul Pelatihan</span>
+              <span id="student-progress-text" class="text-white font-bold">0% (0/8 Bagian)</span>
+            </div>
+            <div class="w-full bg-amber-950/50 rounded-full h-3 p-0.5 border border-amber-600/40">
+              <div id="student-progress-bar" class="bg-amber-400 h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Banner Kelulusan & Klaim Sertifikat (Muncul Jika 100% Selesai) -->
+      <div id="cert-claim-banner" class="hidden p-5 bg-gradient-to-r from-emerald-800 to-teal-700 text-white rounded-2xl shadow-lg flex flex-col md:flex-row items-center justify-between gap-4 border border-emerald-500">
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center text-2xl shrink-0 text-amber-300 shadow-inner">
+            <i class="fa-solid fa-graduation-cap"></i>
+          </div>
+          <div>
+            <h4 class="font-bold text-base text-white">🎉 Selamat! Anda Telah Tuntas Menyelesaikan Seluruh Modul</h4>
+            <p class="text-xs text-emerald-100">Seluruh 8 Bagian Pelatihan PM telah dituntaskan. Klik tombol untuk menuju Halaman Sertifikat.</p>
+          </div>
+        </div>
+        <button onclick="showView('completion-view')" class="bg-amber-400 hover:bg-amber-300 text-amber-950 font-bold text-xs px-5 py-3 rounded-xl shadow transition shrink-0 flex items-center gap-2">
+          <i class="fa-solid fa-award text-base"></i> Buka Halaman Sertifikat
+        </button>
+      </div>
+
+      <!-- Katalog 8 Bagian Pelatihan -->
+      <div>
+        <h3 class="text-xl font-bold text-amber-900 mb-4 flex items-center"><i class="fa-solid fa-layer-group text-amber-600 mr-2"></i> Struktur Alur Pembelajaran Pelatihan (8 Bagian)</h3>
+        <div id="modules-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+          <!-- Modul 1-8 dirender dinamis via JS -->
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. MODUL DETAIL INTERAKTIF (PER BAGIAN MODUL) -->
+    <section id="module-detail" class="space-y-6 hidden">
+      <!-- Tombol Kembali -->
+      <button onclick="showView('student-dashboard')" class="text-amber-800 text-sm font-bold hover:underline flex items-center gap-1.5"><i class="fa-solid fa-arrow-left"></i> Kembali ke Katalog Modul</button>
+      
+      <!-- Judul Bagian -->
+      <div class="card-yellow p-6 rounded-2xl border-t-4 border-t-amber-600">
+        <div class="flex justify-between items-start">
+          <span id="mod-badge" class="bg-amber-100 text-amber-900 text-xs font-bold px-3 py-1 rounded-full border border-amber-300">Bagian Pelatihan</span>
+          <div id="mod-completion-status"></div>
+        </div>
+        <h2 id="module-title" class="text-2xl font-bold text-amber-950 mt-2">Judul Bagian Modul</h2>
+        <p id="module-desc" class="text-sm text-slate-600 mt-1">Deskripsi modul pelatihan.</p>
+      </div>
+
+      <!-- 1. Pertanyaan Pemantik + Kolom Jawaban & Tombol Kirim -->
+      <div class="card-yellow p-6 rounded-2xl border-l-4 border-l-amber-500 bg-amber-50/30 space-y-3">
+        <h3 class="font-bold text-lg text-amber-900 mb-2"><i class="fa-solid fa-comments text-amber-600 mr-2"></i>1. Pertanyaan Pemantik Pemikiran</h3>
+        <div class="p-4 bg-white rounded-xl border border-amber-200">
+          <p id="module-pemantik" class="text-sm font-semibold text-amber-950 italic">Pertanyaan pemantik akan tampil di sini...</p>
+        </div>
+        
+        <!-- KOLOM JAWABAN PEMANTIK -->
+        <div>
+          <label class="block text-xs font-bold text-amber-900 mb-1">Jawaban / Pemikiran Awal Anda:</label>
+          <textarea id="pemantik-answer" rows="3" placeholder="Tuliskan jawaban atau ide awal Anda terhadap pertanyaan pemantik di atas..." class="w-full bg-white border border-amber-300 rounded-xl p-3 text-xs text-slate-800 focus:outline-none focus:border-amber-600"></textarea>
+        </div>
+        <div class="flex items-center justify-between">
+          <button onclick="submitPemantikAnswer()" class="bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs px-4 py-2 rounded-lg transition shadow-md flex items-center gap-1.5">
+            <i class="fa-solid fa-paper-plane"></i> Kirim Jawaban Pemantik
+          </button>
+          <div id="pemantik-fb" class="hidden text-xs font-bold text-emerald-800 bg-emerald-100 px-3 py-1.5 rounded-lg border border-emerald-300"></div>
+        </div>
+      </div>
+
+      <!-- 2. Ringkasan Singkat Materi & Tautan Drive -->
+      <div class="card-yellow p-6 rounded-2xl space-y-4">
+        <h3 class="font-bold text-lg text-amber-900"><i class="fa-solid fa-book-open text-amber-600 mr-2"></i>2. Rangkuman Ringkas Materi & Berkas Pembelajaran</h3>
+        
+        <div id="module-summary" class="text-xs text-slate-700 leading-relaxed space-y-2 bg-amber-50/50 p-4 rounded-xl border border-amber-200">
+          <!-- Rangkuman materi akan dirender dinamis -->
+        </div>
+
+        <!-- Tautan Google Drive Modul -->
+        <div class="pt-2 border-t border-amber-200">
+          <div class="p-4 bg-amber-100/60 border border-amber-300 rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div class="flex items-center space-x-3">
+              <div class="w-10 h-10 rounded-lg bg-amber-500 text-white flex items-center justify-center text-xl shadow-sm">
+                <i class="fa-brands fa-google-drive"></i>
+              </div>
+              <div>
+                <p id="drive-title" class="text-xs font-bold text-amber-950">Berkas Referensi & Bahan Ajar (Google Drive)</p>
+                <p class="text-[11px] text-amber-800/80">Unduh materi lengkap, paparan presentasi, dan instrumen pelatihan</p>
+              </div>
+            </div>
+            <a id="drive-link-btn" href="#" target="_blank" class="bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold px-4 py-2.5 rounded-lg transition flex items-center shadow-md shrink-0">
+              <i class="fa-solid fa-arrow-up-right-from-square mr-2"></i> Buka Google Drive
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. Bagian Asesmen Pilihan Ganda (Khusus Modul 1-7) / Penuntasan Nasmik (Bagian 1) -->
+      <div id="assessment-section" class="card-yellow p-6 rounded-2xl border-t-4 border-t-amber-600">
+        <div class="flex justify-between items-center mb-4">
+          <div>
+            <h3 class="font-bold text-lg text-amber-900"><i class="fa-solid fa-pen-to-square text-amber-600 mr-2"></i>3. Asesmen Evaluasi Pilihan Ganda (5 Soal)</h3>
+            <p class="text-xs text-slate-500">Jawablah 5 pertanyaan asesmen untuk menguji pemahaman Anda pada modul ini.</p>
+          </div>
+          <span class="bg-amber-100 text-amber-900 text-xs font-bold px-3 py-1 rounded-full border border-amber-300">Skor Max: 100</span>
+        </div>
+
+        <form id="quiz-form" onsubmit="event.preventDefault(); submitQuiz();" class="space-y-5">
+          <div id="quiz-container" class="space-y-4 text-xs">
+            <!-- Soal Asesmen 1-5 dirender dinamis -->
+          </div>
+
+          <!-- 4. Pertanyaan Refleksi HOTS -->
+          <div class="pt-4 border-t border-amber-200">
+            <h4 class="font-bold text-sm text-amber-900 mb-1"><i class="fa-solid fa-brain text-amber-600 mr-2"></i>4. Pertanyaan Refleksi HOTS (Higher-Order Thinking Skills)</h4>
+            <p id="hots-question" class="text-xs font-semibold text-slate-800 mb-2">Pertanyaan refleksi HOTS...</p>
+            <textarea id="hots-answer" rows="3" required placeholder="Tuliskan gagasan, analisis, dan refleksi penerapannya di kelas Anda..." class="w-full bg-amber-50/40 border border-amber-300 rounded-xl p-3 text-xs text-slate-800 focus:outline-none focus:border-amber-600 focus:bg-white"></textarea>
+          </div>
+
+          <div class="pt-3 border-t border-amber-200 flex items-center justify-between">
+            <button type="submit" class="bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs px-5 py-2.5 rounded-lg shadow-md transition flex items-center gap-2">
+              <i class="fa-solid fa-paper-plane"></i> Kirim Asesmen & Tandai Selesai
+            </button>
+            <div id="quiz-score-display" class="hidden text-xs font-bold"></div>
+          </div>
+        </form>
+      </div>
+
+      <!-- Khusus Bagian 1 Nasmik (Non-Soal Pilihan Ganda, Hanya Konfirmasi Selesai & Refleksi) -->
+      <div id="nasmik-section" class="card-yellow p-6 rounded-2xl border-t-4 border-t-amber-600 hidden">
+        <h3 class="font-bold text-lg text-amber-900 mb-2"><i class="fa-solid fa-circle-check text-amber-600 mr-2"></i>Konfirmasi Penuntasan Naskah Akademik (Nasmik PM)</h3>
+        <p class="text-xs text-slate-600 mb-4">Setelah membaca naskah akademik di atas, berikan refleksi pemahaman awal Anda untuk menandai bagian ini selesai.</p>
+
+        <form onsubmit="event.preventDefault(); completeNasmikSection();" class="space-y-4">
+          <div>
+            <label class="block text-xs font-bold text-amber-900 mb-1">Refleksi Awal Naskah Akademik PM:</label>
+            <textarea id="nasmik-reflection" rows="3" required placeholder="Tuliskan poin penting yang Anda sepakati dari Naskah Akademik Pembelajaran Mendalam..." class="w-full bg-amber-50/40 border border-amber-300 rounded-xl p-3 text-xs text-slate-800 focus:outline-none focus:border-amber-600 focus:bg-white"></textarea>
+          </div>
+          <button type="submit" class="bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs px-5 py-2.5 rounded-lg shadow-md transition flex items-center gap-2">
+            <i class="fa-solid fa-circle-check"></i> Selesaikan Bagian Naskah Akademik
+          </button>
+        </form>
+      </div>
+    </section>
+
+    <!-- 5. HALAMAN TERAKHIR: PENYELESAIAN & KLAIM SERTIFIKAT PELATIHAN -->
+    <section id="completion-view" class="max-w-3xl mx-auto space-y-6 hidden">
+      <div class="card-yellow p-8 rounded-2xl text-center border-t-8 border-t-amber-600 shadow-xl space-y-6">
+        <div class="w-24 h-24 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mx-auto text-5xl shadow-inner border-2 border-amber-300">
+          <i class="fa-solid fa-award"></i>
+        </div>
+        
+        <div>
+          <span class="bg-emerald-100 text-emerald-800 text-xs font-bold px-3 py-1.5 rounded-full border border-emerald-300"><i class="fa-solid fa-circle-check mr-1"></i> Seluruh 8 Bagian Modul Dituntaskan</span>
+          <h2 class="text-3xl font-extrabold text-amber-950 mt-3">Selamat! Anda Telah Menyelesaikan Pelatihan Pembelajaran Mendalam (PM)</h2>
+          <p class="text-xs text-amber-800 font-medium mt-1">Pengembang LMS: <strong>Nanang Setiawan, ST</strong></p>
+        </div>
+        
+        <div class="p-6 bg-amber-50/80 rounded-2xl border border-amber-200 text-left space-y-3 shadow-sm">
+          <h3 class="font-bold text-amber-900 text-base flex items-center gap-2">
+            <i class="fa-solid fa-heart-circle-check text-amber-600"></i> Pesan Penerapan di Ruang Kelas:
+          </h3>
+          <p class="text-xs text-slate-700 leading-relaxed">
+            Keberhasilan sejati dari pelatihan ini bukan hanya sekadar penuntasan seluruh modul di sistem LMS, melainkan <strong>dampak nyata yang Anda hadirkan di dalam kelas tempat Anda mengajar</strong>.
+          </p>
+          <p class="text-xs text-slate-700 leading-relaxed">
+            Mari terus terapkan prinsip pembelajaran yang <strong>Berkesadaran (Mindful)</strong>, <strong>Bermakna (Meaningful)</strong>, dan <strong>Menyenangkan (Joyful)</strong>. Jadilah fasilitator pemikiran yang memantik rasa ingin tahu, membangun karakter positif, dan membimbing peserta didik mencapai pemahaman konseptual tingkat tinggi.
+          </p>
+          <p class="text-xs font-bold text-amber-900 pt-1">
+            Selamat bertugas membawa perubahan positif bagi pendidikan Indonesia!
+          </p>
+        </div>
+
+        <div class="pt-4 border-t border-amber-200 space-y-3">
+          <p class="text-xs font-bold text-amber-950">Langkah Terakhir: Klaim Sertifikat Pelatihan Anda</p>
+          <a href="https://forms.gle/CXksQ2D5Dva5SmEd7" target="_blank" class="inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm px-6 py-3.5 rounded-xl shadow-lg transition transform hover:-translate-y-0.5">
+            <i class="fa-solid fa-file-signature text-lg"></i> Isi Formulir & Klaim Sertifikat Pelatihan
+          </a>
+          <p class="text-[11px] text-slate-500">Tautan di atas akan membuka Google Form verifikasi penerbitan sertifikat resmi Anda.</p>
+        </div>
+
+        <div class="pt-2">
+          <button onclick="showView('student-dashboard')" class="text-xs text-amber-800 font-bold hover:underline inline-flex items-center gap-1">
+            <i class="fa-solid fa-arrow-left"></i> Kembali ke Dashboard Utama Pelatihan
+          </button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="border-t border-amber-200 bg-white py-4 text-center text-xs text-amber-900">
+    <p>&copy; 2026 LMS Pelatihan Pembelajaran Mendalam (PM). Dirancang oleh Nanang Setiawan, ST.</p>
+  </footer>
+
+  <!-- JAVASCRIPT LOGIC & STATE MANAGEMENT -->
+  <script>
+    let currentModuleId = 1;
+    let isAdminLoggedIn = false;
+    let currentStudentUser = null; // Username siswa yang sedang login
+
+    // Database Peserta Terdaftar (Menyimpan seluruh rekam aktivitas)
+    let userDatabase = [];
+
+    // TAUTAN DRIVES MASING-MASING MODUL (1-7) & NASMIK
+    const driveLinks = {
+      1: "https://drive.google.com/drive/folders/1oLuUS6ATro6OJWq625epaoVCoADiGjfn?usp=sharing",
+      2: "https://drive.google.com/drive/folders/1YmPKdPaxabjnpvqE96KgDaLcsDxPSh6w?usp=sharing",
+      3: "https://drive.google.com/drive/folders/1Qpvdeh21R2n7GWTsfEYByC0QKHvcmVox?usp=sharing",
+      4: "https://drive.google.com/drive/folders/1QC678spiNvbnNe-EZzC9izSWpV0GqdZF?usp=sharing",
+      5: "https://drive.google.com/drive/folders/1c_6ZGXvjqKfxA2LkRlWkXPYaY0ayRS1G?usp=sharing",
+      6: "https://drive.google.com/drive/folders/1ZL8z69H9Up3j6QftB00QQMGuIc38tYc-?usp=sharing",
+      7: "https://drive.google.com/drive/folders/1W2v9Fg6rOwVX-q04h9OOS771TrXae7Im?usp=sharing"
+    };
+
+    // DATA MODUL 8 BAGIAN PELATIHAN
+    const modulesData = {
+      1: {
+        title: "Bagian 1: Pengantar & Naskah Akademik (Nasmik) Pembelajaran Mendalam",
+        desc: "Latar belakang, kerangka berpikir, dan landasan filosofis Naskah Akademik Pembelajaran Mendalam.",
+        pemantik: "Bagaimana kita dapat mengubah pembelajaran dari sekadar menghafal materi menjadi pengalaman belajar yang membangun pemahaman mendalam, kesadaran, dan makna hidup bagi peserta didik?",
+        summary: `<p class="font-bold text-amber-900">A. Hakekat Pembelajaran Mendalam (PM):</p>
+          <p>Pembelajaran Mendalam merupakan pendekatan pedagogi yang menekankan pada pencapaian pemahaman konseptual tingkat tinggi, penguasaan keterampilan abad ke-21, serta pembentukan karakter peserta didik melalui prinsip <em>Mindful, Meaningful, and Joyful Learning</em>.</p>
+          <p class="font-bold text-amber-900 mt-2">B. Landasan Naskah Akademik (Nasmik):</p>
+          <p>Naskah Akademik PM memuat orientasi pergeseran paradigma pendidikan: dari pembelajaran berpusat pada konten kaku menuju pembelajaran adaptif berbasis pengalaman otentik, refleksi kritis, dan kolaborasi pemecahan masalah riil.</p>`,
+        isNasmik: true,
+        driveUrl: "https://drive.google.com/drive/folders/1oLuUS6ATro6OJWq625epaoVCoADiGjfn?usp=sharing"
+      },
+      2: {
+        title: "Bagian 2 / Modul 1: Konsep Dasar & Orientasi Pembelajaran Mendalam",
+        desc: "Prinsip utama, elemen kunci, dan orientasi perubahan alur pembelajaran mendalam.",
+        pemantik: "Apa perbedaan paling mendasar antara siswa yang sekadar 'tahu' fakta matematika dengan siswa yang benar-benar 'memahami' konsepnya secara mendalam?",
+        summary: `<p>Modul 1 membahas konstruksi pengetahuan mendalam. Peserta diajak memahami bagaimana otak memproses informasi dari ingatan jangka pendek menjadi pemahaman konseptual yang dapat ditransfer ke konteks dunia nyata.</p>`,
+        driveUrl: driveLinks[1],
+        hots: "Analisislah satu topik materi di kelas Anda yang selama ini sering dihafalkan siswa. Bagaimanakah Anda meredesain alur pembelajaran tersebut agar berorientasi pada Pembelajaran Mendalam?",
+        quiz: [
+          { q: "1. Prinsip utama dalam Pembelajaran Mendalam yang mengutamakan kesadaran penuh peserta didik saat belajar adalah...", o: ["Mindful Learning", "Memory Learning", "Rote Learning", "Speed Learning"], a: 0 },
+          { q: "2. Kemampuan peserta didik untuk menerapkan pemahaman konseptual pada situasi baru yang berbeda dinamakan...", o: ["Transfer Pemahaman", "Menghafal Sintaks", "Remidial", "Rote Recall"], a: 0 },
+          { q: "3. Elemen penting agar Pembelajaran Mendalam terasa bermakna (Meaningful) bagi siswa adalah...", o: ["Materi dihubungkan dengan pengalaman hidup nyata siswa", "Memberikan latihan soal terbanyak", "Meminta siswa mencatat buku teks", "Mempercepat durasi ujian"], a: 0 },
+          { q: "4. Fokus utama pendekatan Pembelajaran Mendalam adalah pergeseran dari...", o: ["Cakupan konten dangkal menuju pemahaman esensial mendalam", "Keterampilan ke hafalan", "Praktik ke teori abstrak", "Kelompok ke kerja individu"], a: 0 },
+          { q: "5. Pembelajaran yang menyenangkan (Joyful Learning) dalam kerangka PM ditandai dengan...", o: ["Adanya rasa ingin tahu, tantangan positif, dan keterlibatan aktif", "Bebas dari semua bentuk tugas", "Bermain tanpa tujuan pembelajaran", "Guru menjelaskan sepanjang jam"], a: 0 }
+        ]
+      },
+      3: {
+        title: "Bagian 3 / Modul 2: Kerangka Kerja & Prinsip Pembelajaran Mendalam",
+        desc: "Pilar kerangka kerja PM, integrasi dimensi kompetensi, dan karakter abad-21.",
+        pemantik: "Mengapa kerangka kerja pembelajaran harus mengintegrasikan penguasaan pengetahuan, keterampilan penalaran, dan pengembangan karakter sekaligus?",
+        summary: `<p>Modul 2 membedah Kerangka Kerja PM yang mencakup 6 Karakteristik Utama (Kreativitas, Berpikir Kritis, Kolaborasi, Komunikasi, Kewarganegaraan, dan Karakter) serta strategi integrasinya dalam RPP/Modul Ajar.</p>`,
+        driveUrl: driveLinks[2],
+        hots: "Bagaimanakah Anda mengevaluasi kerangka pembelajaran yang selama ini berjalan di sekolah Anda? Sebutkan 2 aspek utama yang perlu diperbaiki agar selaras dengan pilar Kerangka PM!",
+        quiz: [
+          { q: "1. Kerangka Pembelajaran Mendalam mengintegrasikan 3 dimensi utama yaitu...", o: ["Pengetahuan, Keterampilan, dan Karakter", "Hafalan, Nilai, dan Absensi", "Teori, Rumus, dan Ujian", "Tugas, Latihan, dan Remidial"], a: 0 },
+          { q: "2. Kemampuan menganalisis informasi, mengevaluasi argumen, dan merumuskan solusi logis merupakan bentuk pilar...", o: ["Berpikir Kritis (Critical Thinking)", "Hafalan Cepat", "Meniru Jawaban", "Penyalinan Data"], a: 0 },
+          { q: "3. Peran utama guru dalam kerangka Pembelajaran Mendalam adalah sebagai...", o: ["Fasilitator & Mitra Belajar Peserta Didik", "Satu-satunya Sumber Informasi", "Pengawas Ujian Kaku", "Penilai Tunggal Tanpa Refleksi"], a: 0 },
+          { q: "4. Mengapa keterlibatan emosional dan minat siswa menjadi pilar penting dalam Kerangka PM?", o: ["Karena emosi positif memperkuat retensi memori dan motivasi internal", "Agar kelas selalu tenang tanpa diskusi", "Hanya untuk memenuhi formalitas kurikulum", "Agar nilai ujian harian meningkat otomatis"], a: 0 },
+          { q: "5. Integrasi pilar Kewarganegaraan (Citizenship) dalam PM bertujuan untuk...", o: ["Membangun kepedulian sosial dan pemecahan masalah komunitas", "Menghafal pasal undang-undang saja", "Membatasi siswa berinteraksi dengan luar", "Fokus pada kompetensi individu semata"], a: 0 }
+        ]
+      },
+      4: {
+        title: "Bagian 4 / Modul 3: Perancangan Pembelajaran Mendalam (Pedagogi & Desain)",
+        desc: "Desain alur alur alur pembelajaran, penentuan tujuan pembelajaran mendalam, dan Backward Design.",
+        pemantik: "Jika Anda memulainya dari hasil akhir yang diharapkan (Backward Design), bagaimana cara merancang tujuan pembelajaran yang tidak sekadar menuntaskan bab?",
+        summary: `<p>Modul 3 mengajarkan teknik perancangan alur pembelajaran menggunakan prinsip *Backward Design* (Desain Mundur): Menentukan Hasil Yang Diinginkan &rarr; Menentukan Bukti Asesmen &rarr; Merancang Kegiatan Pembelajaran.</p>`,
+        driveUrl: driveLinks[3],
+        hots: "Rancanglah alur singkat satu pertemuan Pembelajaran Mendalam menggunakan pola Backward Design untuk mata pelajaran yang Anda ampu!",
+        quiz: [
+          { q: "1. Pendekatan perancangan pembelajaran yang dimulai dari menentukan tujuan akhir dan bukti asesmen terlebih dahulu disebut...", o: ["Backward Design (Desain Mundur)", "Forward Design", "Random Planning", "Content-First Design"], a: 0 },
+          { q: "2. Langkah pertama dalam merancang alur Pembelajaran Mendalam adalah...", o: ["Identifikasi hasil dan pemahaman esensial yang diinginkan", "Membeli buku latihan soal", "Menyusun lembar jawaban ujian", "Mengatur tempat duduk siswa"], a: 0 },
+          { q: "3. Pertanyaan esensial (Essential Question) dalam desain PM berfungsi untuk...", o: ["Memicu pemikiran kritis dan penyelidikan berkelanjutan siswa", "Menguji hafalan definisi istilah", "Memberikan nilai bonus di awal kelas", "Menyingkat waktu mengajar guru"], a: 0 },
+          { q: "4. Bukti asesmen otentik dalam perancangan PM dapat berupa...", o: ["Proyek pemecahan masalah riil / produk karya siswa", "Hanya berupa lembar pilihan ganda", "Daftar kehadiran siswa di kelas", "Catatan kerapian buku tulis"], a: 0 },
+          { q: "5. Merancang aktivitas pembelajaran PM yang efektif harus memastikan bahwa...", o: ["Setiap kegiatan terhubung langsung dengan pemahaman esensial", "Semua halaman buku paket dihabiskan", "Siswa bekerja secara mandiri tanpa arahan", "Guru tidak perlu memberikan umpan balik"], a: 0 }
+        ]
+      },
+      5: {
+        title: "Bagian 5 / Modul 4: Strategi Fasilitasi & Pengalaman Belajar",
+        desc: "Metode fasilitasi aktif, pembelajaran berbasis proyek/masalah (PBL), dan diskusi reflektif.",
+        pemantik: "Bagaimana seorang guru dapat menggeser perannya dari 'pemberi ceramah' menjadi 'fasilitator pemikir' yang memantik rasa ingin tahu siswa?",
+        summary: `<p>Modul 4 mengeksplorasi ragam strategi fasilitasi seperti Inquiry-Based Learning, Problem-Based Learning (PBL), dan teknik scaffolding untuk membimbing penalaran siswa.</p>`,
+        driveUrl: driveLinks[4],
+        hots: "Ketika siswa mengalami kemacetan berpikir saat diskusi kelompok, strategi fasilitasi (*scaffolding*) seperti apa yang paling tepat Anda berikan tanpa langsung memberi jawaban?",
+        quiz: [
+          { q: "1. Strategi pembelajaran yang dihadapkan pada masalah nyata untuk diselidiki dan diselesaikan secara kolaboratif disebut...", o: ["Problem-Based Learning (PBL)", "Direct Instruction", "Rote Memorization", "Lecturing"], a: 0 },
+          { q: "2. Teknik bimbingan bertahap dari guru saat siswa mengalami kesulitan belajar dinamakan...", o: ["Scaffolding", "Drilling", "Punishment", "Lecturing"], a: 0 },
+          { q: "3. Dalam fasilitasi PM, pertanyaan terbuka (open-ended questions) digunakan untuk...", o: ["Mendorong pemikiran mendalam dan beragam sudut pandang", "Mencari satu jawaban pasti dari buku", "Mempercepat sesi tanya jawab", "Menguji daya ingat jangka pendek"], a: 0 },
+          { q: "4. Peran guru dalam diskusi kelompok terarah pada fasilitasi PM adalah...", o: ["Memantau, memantik pertanyaan pembimbing, dan memberi umpan balik", "Mendiktekan seluruh jawaban tabel", "Meninggalkan kelas hingga selesai", "Menilai tanpa melakukan intervensi"], a: 0 },
+          { q: "5. Lingkungan belajar yang aman secara psikologis dalam fasilitasi PM penting karena...", o: ["Siswa tidak takut berbuat salah dan berani mengemukakan ide baru", "Siswa tidak perlu mematuhi aturan", "Siswa boleh tidak mengerjakan tugas", "Guru tidak perlu memberikan evaluasi"], a: 0 }
+        ]
+      },
+      6: {
+        title: "Bagian 6 / Modul 5: Asesmen & Evaluasi Pembelajaran Mendalam",
+        desc: "Asesmen otentik, penilaian formatif berkelanjutan, penggunaan rubrik kinerja, dan umpan balik konstruktif.",
+        pemantik: "Apakah nilai berupa angka (0-100) sudah cukup menggambarkan pemahaman mendalam siswa? Bagaimana asesmen formatif dapat menjadi alat belajar itu sendiri?",
+        summary: `<p>Modul 5 berfokus pada Asesmen As/For Learning. Menekankan penggunaan rubrik deskriptif, asesmen teman sejawat, self-assessment, dan umpan balik berkelanjutan (*Feedforward*).</p>`,
+        driveUrl: driveLinks[5],
+        hots: "Susunlah kriteria umpan balik (*constructive feedback*) yang dapat Anda berikan kepada siswa yang membuat proyek pemecahan masalah namun hasilnya belum optimal!",
+        quiz: [
+          { q: "1. Asesmen yang bertujuan untuk memantau progres belajar dan memberikan umpan balik perbaikan saat proses berlangsung adalah...", o: ["Asesmen Formatif", "Asesmen Sumatif Akhir Tahun", "Ujian Seleksi Masuk", "Tes Diagnostik Medis"], a: 0 },
+          { q: "2. Alat penilaian yang memuat kriteria dan tingkatan deskripsi kualitas kinerja siswa dinamakan...", o: ["Rubrik Penilaian", "Daftar Hadir", "Kunci Jawaban Singkat", "Buku Kas Kelas"], a: 0 },
+          { q: "3. Umpan balik yang efektif dalam Pembelajaran Mendalam harus bersifat...", o: ["Spesifik, konstruktif, dan berorientasi perbaikan ke depan", "Umum seperti 'Bagus' saja", "Berupa hukuman atas kesalahan", "Diberikan hanya di akhir semester"], a: 0 },
+          { q: "4. Proses di mana siswa menilai karya dan pemahamannya sendiri secara jujur disebut...", o: ["Self-Assessment (Asesmen Diri)", "Peer Review", "Summative Test", "Teacher Grading"], a: 0 },
+          { q: "5. Mengapa asesmen otentik berupa unjuk kerja/portofolio sangat dianjurkan dalam PM?", o: ["Karena mampu mengukur kemampuan kompleks dan penerapan dunia nyata", "Karena lebih mudah diperiksa komputer", "Karena tidak memerlukan waktu persiapan", "Karena hanya menggunakan soal pilihan ganda"], a: 0 }
+        ]
+      },
+      7: {
+        title: "Bagian 7 / Modul 6: Integrasi Teknologi & AI dalam Pembelajaran Mendalam",
+        desc: "Pemanfaatan Generative AI, kecerdasan buatan sebagai mitra berpikir, dan etika pemanfaatan teknologi digital.",
+        pemantik: "Bagaimana kita dapat memanfaatkan Artificial Intelligence (AI) sebagai 'mitra berpikir' siswa tanpa menghilangkan kemampuan berpikir kritis mandiri mereka?",
+        summary: `<p>Modul 6 mengeksplorasi integrasi teknologi digital dan AI Generatif untuk memperkaya pemodelan, simulasi interaktif, analisis data, dan personalisasi pembelajaran mendalam.</p>`,
+        driveUrl: driveLinks[6],
+        hots: "Gambarkan skenario tugas pembelajaran di mana siswa diperbolehkan menggunakan AI (seperti ChatGPT), namun tetap dituntut menunjukkan pemikiran kritis dan orisinalitas mandiri!",
+        quiz: [
+          { q: "1. Peran teknologi AI yang paling tepat dalam Pembelajaran Mendalam adalah sebagai...", o: ["Mitra berpikir dan alat akselerasi eksplorasi ide", "Pengganti total peran berpikir siswa", "Alat untuk menyalin tugas secara otomatis", "Penglupa ketrampilan dasar"], a: 0 },
+          { q: "2. Kemampuan merumuskan perintah instruksi yang jelas dan efektif kepada AI Generatif dinamakan...", o: ["Prompt Engineering", "Hardcoding", "Data Mining", "Debugging"], a: 0 },
+          { q: "3. Risiko terbesar pemanfaatan AI dalam pembelajaran yang tidak dibimbing dengan etika adalah...", o: ["Ketergantungan pasif dan penurunan daya kritis siswa", "Kecepatan akses informasi bertambah", "Hemat penggunaan kertas", "Meningkatnya variasi media"], a: 0 },
+          { q: "4. Sikap bijak siswa saat menerima informasi buatan AI Generatif adalah...", o: ["Melakukan verifikasi, evaluasi kritis, dan konfirmasi fakta", "Menerima langsung sebagai kebenaran mutlak", "Langsung menyalin tanpa membaca", "Menutup mata dari teknologi"], a: 0 },
+          { q: "5. Integrasi teknologi dalam PM dikatakan berhasil apabila...", o: ["Meningkatkan keterlibatan kognitif dan pemahaman mendalam siswa", "Semua siswa memegang gawai tanpa diskusi", "Guru tidak perlu hadir mengajar", "Menggunakan aplikasi paling mahal"], a: 0 }
+        ]
+      },
+      8: {
+        title: "Bagian 8 / Modul 7: Praktik Baik, Komunitas Belajar & Keberlanjutan PM",
+        desc: "Studi kasus praktik baik Pembelajaran Mendalam, Komunitas Belajar (Kombel), dan rencana aksi keberlanjutan.",
+        pemantik: "Bagaimana cara membangun budaya kolaborasi antar guru melalui Komunitas Belajar untuk memastikan keberlanjutan Pembelajaran Mendalam di sekolah?",
+        summary: `<p>Modul 7 membekali peserta dengan kemampuan merefleksikan praktik baik, mendokumentasikan studi kasus, serta membangun Komunitas Belajar (PLC) yang berkelanjutan.</p>`,
+        driveUrl: driveLinks[7],
+        hots: "Buatlah Rencana Aksi Tindak Lanjut (RTL) sederhana untuk mengimbaskan prinsip Pembelajaran Mendalam kepada rekan sejawat di sekolah Anda!",
+        quiz: [
+          { q: "1. Wadah kolaborasi antar guru untuk saling belajar, merefleksikan praktik mengajar, dan memecahkan masalah pembelajaran bersama disebut...", o: ["Komunitas Belajar (Kombel)", "Rapat Rutin Absensi", "Koperasi Sekolah", "Panitia Ujian"], a: 0 },
+          { q: "2. Dokumen refleksi praktik baik mengajar Pembelajaran Mendalam bermanfaat untuk...", o: ["Membagikan inspirasi dan melakukan perbaikan mengajar berkelanjutan", "Syarat pendaftaran lomba saja", "Memenuhi tumpukan lemari arsip", "Menilai kekurangan rekan sejawat secara sepihak"], a: 0 },
+          { q: "3. Prinsip utama dalam pengimbasan Pembelajaran Mendalam kepada rekan sejawat adalah...", o: ["Kolaboratif, berbasis bukti praktik nyata, dan saling mendukung", "Menggurui tanpa mendengarkan", "Mewajibkan tanpa memberi contoh", "Menutup diri dari masukan"], a: 0 },
+          { q: "4. Langkah awal merancang Rencana Aksi Tindak Lanjut (RTL) Pembelajaran Mendalam adalah...", o: ["Identifikasi kebutuhan dan pemetaan kelas yang akan diterapkan PM", "Membeli perlengkapan kelas baru", "Mengubah seluruh jadwal sekolah", "Meminta anggaran biaya besar"], a: 0 },
+          { q: "5. Keberlanjutan penerapan Pembelajaran Mendalam di sekolah sangat dipengaruhi oleh...", o: ["Budaya refleksi berkesinambungan dan dukungan kepemimpinan pembelajaran", "Sekali pelatihan tanpa evaluasi", "Jumlah komputer di laboratorium semata", "Banyaknya spanduk di sekolah"], a: 0 }
+        ]
+      }
+    };
+
+    document.addEventListener("DOMContentLoaded", function() {
+      renderStudentTable();
+      renderModuleGrid();
+    });
+
+    // ROUTE GUARD / SECURITY RULE
+    function showView(viewId) {
+      if (viewId === 'admin-dashboard' && !isAdminLoggedIn) {
+        alert('Akses Ditolak!\nHalaman Panel Admin dilindungi. Silakan login pada tab Akses Admin.');
+        switchAuthTab('admin');
+        viewId = 'auth-view';
+      }
+
+      if ((viewId === 'student-dashboard' || viewId === 'module-detail' || viewId === 'completion-view') && !currentStudentUser) {
+        alert('Akses Ditolak!\nAnda harus terdaftar dan login terlebih dahulu sebagai peserta.');
+        switchAuthTab('login');
+        viewId = 'auth-view';
+      }
+
+      const views = ['auth-view', 'student-dashboard', 'admin-dashboard', 'module-detail', 'completion-view'];
+      views.forEach(id => {
+        document.getElementById(id).classList.add('hidden');
+      });
+      document.getElementById(viewId).classList.remove('hidden');
+      window.scrollTo(0,0);
+    }
+
+    function switchAuthTab(type) {
+      document.getElementById('form-login').classList.add('hidden');
+      document.getElementById('form-reg').classList.add('hidden');
+      document.getElementById('form-admin').classList.add('hidden');
+
+      document.getElementById('tab-login-btn').className = 'flex-1 py-2 rounded-lg text-amber-800 hover:text-amber-900';
+      document.getElementById('tab-reg-btn').className = 'flex-1 py-2 rounded-lg text-amber-800 hover:text-amber-900';
+      document.getElementById('tab-admin-btn').className = 'flex-1 py-2 rounded-lg text-amber-800 hover:text-amber-900';
+
+      if(type === 'login') {
+        document.getElementById('form-login').classList.remove('hidden');
+        document.getElementById('tab-login-btn').className = 'flex-1 py-2 rounded-lg bg-amber-600 text-white shadow-sm';
+      } else if(type === 'reg') {
+        document.getElementById('form-reg').classList.remove('hidden');
+        document.getElementById('tab-reg-btn').className = 'flex-1 py-2 rounded-lg bg-amber-600 text-white shadow-sm';
+      } else if(type === 'admin') {
+        document.getElementById('form-admin').classList.remove('hidden');
+        document.getElementById('tab-admin-btn').className = 'flex-1 py-2 rounded-lg bg-amber-800 text-white shadow-sm';
+      }
+    }
+
+    // REGISTRASI PESERTA BARU
+    function handleRegistration(e) {
+      e.preventDefault();
+      const nama = document.getElementById("reg-nama").value.trim();
+      const user = document.getElementById("reg-user").value.trim().toLowerCase();
+      const pass = document.getElementById("reg-pass").value.trim();
+
+      if(!nama || !user || !pass) {
+        alert("Mohon lengkapi seluruh isian data pendaftaran!");
+        return;
+      }
+
+      const isExist = userDatabase.some(u => u.user === user);
+      if(isExist) {
+        alert(`User '${user}' sudah terdaftar! Silakan gunakan username lain atau langsung login.`);
+        switchAuthTab('login');
+        return;
+      }
+
+      userDatabase.push({
+        nama: nama,
+        user: user,
+        password: pass,
+        isLoggedIn: false,
+        completedModules: [], 
+        pemantikAnswers: {},  // Menyimpan jawaban pemantik per modul
+        quizScores: {},       // Menyimpan skor pilihan ganda per modul
+        reflections: {}       // Menyimpan jawaban refleksi HOTS per modul
+      });
+
+      renderStudentTable();
+      alert(`Pendaftaran Berhasil!\nSelamat datang ${nama}. Silakan login menggunakan User: '${user}' dan Password Anda.`);
+      document.getElementById("form-reg").reset();
+      switchAuthTab('login');
+    }
+
+    // LOGIN PESERTA
+    function handleStudentLogin(e) {
+      e.preventDefault();
+      const userVal = document.getElementById("login-user").value.trim().toLowerCase();
+      const passVal = document.getElementById("login-pass").value.trim();
+
+      if(userDatabase.length === 0) {
+        alert("Belum ada peserta terdaftar dalam sistem! Silakan klik tab 'Daftar Baru' terlebih dahulu.");
+        switchAuthTab('reg');
+        return;
+      }
+
+      const pIndex = userDatabase.findIndex(u => u.user === userVal && u.password === passVal);
+
+      if(pIndex !== -1) {
+        currentStudentUser = userVal;
+        userDatabase[pIndex].isLoggedIn = true;
+        renderStudentTable();
+        updateStudentDashboardUI();
+        showView('student-dashboard');
+      } else {
+        alert("Akses Gagal!\nUser atau Password yang Anda masukkan tidak cocok atau belum terdaftar.");
+      }
+    }
+
+    // LOGIN ADMIN (Otorisasi: admin / 123456)
+    function handleAdminLogin(e) {
+      e.preventDefault();
+      const user = document.getElementById("admin-user").value.trim();
+      const pass = document.getElementById("admin-pass").value.trim();
+
+      if(user === "admin" && pass === "123456") {
+        isAdminLoggedIn = true;
+        alert("Otorisasi Admin Berhasil!\nSelamat Datang di Panel Manajemen Admin (Nanang Setiawan, ST).");
+        document.getElementById("form-admin").reset();
+        showView('admin-dashboard');
+      } else {
+        alert("Akses Admin Ditolak!\nUser atau Password Admin salah.");
+      }
+    }
+
+    function adminLogout() {
+      isAdminLoggedIn = false;
+      alert("Anda telah keluar dari Panel Admin.");
+      showView('auth-view');
+    }
+
+    function studentLogout() {
+      if(currentStudentUser) {
+        const idx = userDatabase.findIndex(u => u.user === currentStudentUser);
+        if(idx !== -1) userDatabase[idx].isLoggedIn = false;
+      }
+      currentStudentUser = null;
+      alert("Anda telah keluar dari akun peserta.");
+      showView('auth-view');
+    }
+
+    // HAPUS PESERTA BESERTA SELURUH REKAM AKTIVITAS DARI DATABASE
+    function deleteStudent(index) {
+      const student = userDatabase[index];
+      if(!student) return;
+
+      if(confirm(`Apakah Anda yakin ingin menghapus peserta "${student.nama}" (User: ${student.user}) beserta SELURUH data rekam pekerjaannya dari database?`)) {
+        if(currentStudentUser === student.user) {
+          currentStudentUser = null;
+        }
+        userDatabase.splice(index, 1);
+        renderStudentTable();
+        alert("Data peserta dan seluruh rekam pekerjaannya berhasil dihapus dari database!");
+      }
+    }
+
+    // FUNGSI SUBMIT JAWABAN PEMANTIK
+    function submitPemantikAnswer() {
+      const ans = document.getElementById("pemantik-answer").value.trim();
+      if(!ans) {
+        alert("Mohon isi kolom jawaban pertanyaan pemantik terlebih dahulu!");
+        return;
+      }
+
+      const sIdx = userDatabase.findIndex(u => u.user === currentStudentUser);
+      if(sIdx !== -1) {
+        if(!userDatabase[sIdx].pemantikAnswers) userDatabase[sIdx].pemantikAnswers = {};
+        userDatabase[sIdx].pemantikAnswers[currentModuleId] = ans;
+      }
+
+      const fb = document.getElementById("pemantik-fb");
+      fb.classList.remove("hidden");
+      fb.innerText = "✓ Jawaban Pemantik Berhasil Terkirim & Terekam di Dashboard Admin!";
+
+      renderStudentTable();
+    }
+
+    // RENDER TABEL PESERTA PADA PANEL ADMIN
+    function renderStudentTable() {
+      const tbody = document.getElementById("peserta-table-body");
+      if(!tbody) return;
+      tbody.innerHTML = "";
+
+      if(userDatabase.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="7" class="p-8 text-center text-amber-800/60 font-medium bg-amber-50/30">
+              <i class="fa-solid fa-folder-open text-3xl mb-2 text-amber-300 block"></i>
+              Belum ada peserta terdaftar. Data akan otomatis muncul setelah peserta mendaftar.
+            </td>
+          </tr>
+        `;
+        document.getElementById("stat-total-peserta").innerText = "0";
+        document.getElementById("stat-aktif-peserta").innerText = "0";
+        document.getElementById("stat-avg-nilai").innerText = "-";
+        document.getElementById("stat-total-selesai").innerText = "0";
+        return;
+      }
+
+      let totalAktif = 0;
+      let totalScoreSum = 0;
+      let totalScoreCount = 0;
+      let totalModulSelesaiAll = 0;
+
+      userDatabase.forEach((siswa, idx) => {
+        if(siswa.isLoggedIn) totalAktif++;
+        totalModulSelesaiAll += siswa.completedModules.length;
+
+        const scores = Object.values(siswa.quizScores);
+        let avgScore = "-";
+        if(scores.length > 0) {
+          const sum = scores.reduce((a, b) => a + b, 0);
+          avgScore = (sum / scores.length).toFixed(1);
+          totalScoreSum += sum;
+          totalScoreCount += scores.length;
+        }
+
+        let statusBadge = siswa.isLoggedIn 
+          ? `<span class="bg-emerald-100 text-emerald-800 text-[11px] font-bold px-2.5 py-1 rounded-full"><i class="fa-solid fa-circle-check mr-1"></i> Aktif Login</span>`
+          : `<span class="bg-amber-100 text-amber-800 text-[11px] font-bold px-2.5 py-1 rounded-full"><i class="fa-solid fa-clock mr-1"></i> Terdaftar</span>`;
+
+        tbody.innerHTML += `
+          <tr class="hover:bg-amber-50/60 transition">
+            <td class="p-3 font-semibold text-slate-700 border-b">${idx + 1}</td>
+            <td class="p-3 font-bold text-amber-950 border-b">${siswa.nama}</td>
+            <td class="p-3 font-mono text-slate-600 border-b">${siswa.user}</td>
+            <td class="p-3 border-b">${statusBadge}</td>
+            <td class="p-3 font-semibold text-amber-800 border-b">${siswa.completedModules.length} / 8 Bagian (${Math.round((siswa.completedModules.length/8)*100)}%)</td>
+            <td class="p-3 font-bold ${avgScore >= 75 ? 'text-emerald-700' : 'text-amber-700'} border-b">${avgScore}</td>
+            <td class="p-3 border-b text-center">
+              <div class="flex items-center justify-center gap-1.5">
+                <button onclick="viewStudentDetail(${idx})" class="text-xs bg-amber-50 border border-amber-300 text-amber-800 hover:bg-amber-600 hover:text-white font-bold px-2.5 py-1 rounded-lg transition shadow-sm flex items-center gap-1">
+                  <i class="fa-solid fa-eye"></i> Detail Aktivitas
+                </button>
+                <button onclick="deleteStudent(${idx})" class="text-xs bg-red-50 border border-red-200 text-red-600 hover:bg-red-600 hover:text-white font-bold px-2.5 py-1 rounded-lg transition shadow-sm flex items-center gap-1">
+                  <i class="fa-solid fa-trash-can"></i> Hapus
+                </button>
+              </div>
+            </td>
+          </tr>
+        `;
+      });
+
+      document.getElementById("stat-total-peserta").innerText = userDatabase.length;
+      document.getElementById("stat-aktif-peserta").innerText = totalAktif;
+      document.getElementById("stat-total-selesai").innerText = totalModulSelesaiAll;
+      document.getElementById("stat-avg-nilai").innerText = totalScoreCount > 0 ? (totalScoreSum / totalScoreCount).toFixed(1) : "-";
+    }
+
+    // MEMBUKA MODAL DETAIL REKAM AKTIVITAS PADA PANEL ADMIN
+    function viewStudentDetail(index) {
+      const student = userDatabase[index];
+      if(!student) return;
+
+      document.getElementById("modal-student-name").innerText = `Rekam Aktivitas: ${student.nama}`;
+      document.getElementById("modal-student-user").innerText = `Username: ${student.user} | Progres: ${student.completedModules.length}/8 Bagian Selesai`;
+
+      const container = document.getElementById("modal-activity-content");
+      container.innerHTML = "";
+
+      for (let i = 1; i <= 8; i++) {
+        const mod = modulesData[i];
+        const isComp = student.completedModules.includes(i);
+        const pemantikAns = student.pemantikAnswers && student.pemantikAnswers[i] ? student.pemantikAnswers[i] : "(Belum dijawab)";
+        const score = student.quizScores && student.quizScores[i] !== undefined ? `${student.quizScores[i]} / 100` : "(Belum mengerjakan)";
+        const hotsAns = student.reflections && student.reflections[i] ? student.reflections[i] : "(Belum dijawab)";
+
+        container.innerHTML += `
+          <div class="p-4 bg-amber-50/50 rounded-xl border border-amber-200 space-y-2">
+            <div class="flex justify-between items-center border-b border-amber-200 pb-2">
+              <span class="font-bold text-amber-950">${mod.title}</span>
+              ${isComp ? '<span class="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2.5 py-0.5 rounded-full">Selesai</span>' : '<span class="bg-amber-100 text-amber-800 text-[10px] font-bold px-2.5 py-0.5 rounded-full">Belum Selesai</span>'}
+            </div>
+            <div class="space-y-1 text-slate-700 leading-relaxed">
+              <p><strong>Jawaban Pertanyaan Pemantik:</strong></p>
+              <p class="p-2 bg-white rounded border border-amber-200 italic text-slate-800">${escapeHtml(pemantikAns)}</p>
+              ${mod.isNasmik ? '' : `<p class="mt-2"><strong>Skor Asesmen Pilihan Ganda:</strong> <span class="font-bold text-amber-900">${score}</span></p>`}
+              <p class="mt-2"><strong>${mod.isNasmik ? 'Refleksi Naskah Akademik:' : 'Jawaban Refleksi HOTS:'}</strong></p>
+              <p class="p-2 bg-white rounded border border-amber-200 italic text-slate-800">${escapeHtml(hotsAns)}</p>
+            </div>
+          </div>
+        `;
+      }
+
+      document.getElementById("activity-modal").classList.remove("hidden");
+    }
+
+    function closeActivityModal() {
+      document.getElementById("activity-modal").classList.add("hidden");
+    }
+
+    function escapeHtml(str) {
+      return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+    }
+
+    // RENDER GRIDS KATALOG 8 BAGIAN
+    function renderModuleGrid() {
+      const grid = document.getElementById("modules-grid");
+      if(!grid) return;
+      grid.innerHTML = "";
+
+      const currentStudent = userDatabase.find(u => u.user === currentStudentUser);
+
+      for(let i=1; i<=8; i++) {
+        const m = modulesData[i];
+        const isCompleted = currentStudent && currentStudent.completedModules.includes(i);
+
+        let badgeHTML = isCompleted 
+          ? `<span class="bg-emerald-100 text-emerald-800 border border-emerald-300 text-[11px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1"><i class="fa-solid fa-circle-check text-emerald-600"></i> Selesai</span>`
+          : `<span class="bg-amber-100 text-amber-800 border border-amber-300 text-[11px] font-bold px-2.5 py-1 rounded-full">Belum Selesai</span>`;
+
+        grid.innerHTML += `
+          <div onclick="openModule(${i})" class="card-yellow p-5 rounded-xl cursor-pointer hover:scale-[1.02] transition flex flex-col justify-between border-t-4 ${isCompleted ? 'border-t-emerald-500' : 'border-t-amber-500'}">
+            <div>
+              <div class="flex justify-between items-center mb-3">
+                <span class="w-9 h-9 rounded-lg bg-amber-100 text-amber-900 flex items-center justify-center font-bold text-sm border border-amber-200">0${i}</span>
+                ${badgeHTML}
+              </div>
+              <h4 class="font-bold text-amber-950 text-base leading-snug">${m.title}</h4>
+              <p class="text-xs text-slate-600 mt-2 line-clamp-2">${m.desc}</p>
+            </div>
+            <div class="mt-4 pt-3 border-t border-amber-100 flex items-center justify-between text-xs font-bold text-amber-700">
+              <span>Buka Modul</span>
+              <i class="fa-solid fa-arrow-right"></i>
+            </div>
+          </div>
+        `;
+      }
+    }
+
+    function updateStudentDashboardUI() {
+      const student = userDatabase.find(u => u.user === currentStudentUser);
+      if(!student) return;
+
+      document.getElementById("student-welcome-title").innerText = `Selamat Datang, ${student.nama}!`;
+      const count = student.completedModules.length;
+      const perc = Math.round((count / 8) * 100);
+
+      document.getElementById("student-progress-text").innerText = `${perc}% (${count}/8 Bagian)`;
+      document.getElementById("student-progress-bar").style.width = `${perc}%`;
+
+      // Munculkan banner klaim sertifikat jika sudah 100% tuntas
+      const certBanner = document.getElementById("cert-claim-banner");
+      if(count === 8) {
+        certBanner.classList.remove("hidden");
+      } else {
+        certBanner.classList.add("hidden");
+      }
+
+      renderModuleGrid();
+    }
+
+    // BUKA MODUL DETAIL
+    function openModule(modId) {
+      currentModuleId = modId;
+      const data = modulesData[modId];
+      if(!data) return;
+
+      const student = userDatabase.find(u => u.user === currentStudentUser);
+      const isCompleted = student && student.completedModules.includes(modId);
+
+      document.getElementById("mod-badge").innerText = `Bagian ${modId} Dari 8 Bagian`;
+      document.getElementById("module-title").innerText = data.title;
+      document.getElementById("module-desc").innerText = data.desc;
+      document.getElementById("module-pemantik").innerText = `"${data.pemantik}"`;
+      document.getElementById("pemantik-answer").value = (student && student.pemantikAnswers && student.pemantikAnswers[modId]) ? student.pemantikAnswers[modId] : "";
+      document.getElementById("pemantik-fb").classList.add("hidden");
+
+      document.getElementById("module-summary").innerHTML = data.summary;
+      document.getElementById("drive-link-btn").href = data.driveUrl;
+
+      const statusEl = document.getElementById("mod-completion-status");
+      if(isCompleted) {
+        statusEl.innerHTML = `<span class="bg-emerald-100 text-emerald-800 border border-emerald-300 text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1.5"><i class="fa-solid fa-circle-check text-emerald-600 text-sm"></i> Status: Modul Telah Selesai</span>`;
+      } else {
+        statusEl.innerHTML = `<span class="bg-amber-100 text-amber-800 border border-amber-300 text-xs font-bold px-3 py-1 rounded-full">Status: Belum Selesai</span>`;
+      }
+
+      if(data.isNasmik) {
+        document.getElementById("assessment-section").classList.add("hidden");
+        document.getElementById("nasmik-section").classList.remove("hidden");
+        document.getElementById("nasmik-reflection").value = (student && student.reflections[1]) ? student.reflections[1] : "";
+      } else {
+        document.getElementById("nasmik-section").classList.add("hidden");
+        document.getElementById("assessment-section").classList.remove("hidden");
+        
+        renderQuizQuestions(data.quiz);
+        document.getElementById("hots-question").innerText = data.hots;
+        document.getElementById("hots-answer").value = (student && student.reflections[modId]) ? student.reflections[modId] : "";
+      }
+
+      showView('module-detail');
+    }
+
+    function renderQuizQuestions(quizList) {
+      const container = document.getElementById("quiz-container");
+      const scoreDisplay = document.getElementById("quiz-score-display");
+      scoreDisplay.classList.add("hidden");
+      container.innerHTML = "";
+
+      quizList.forEach((qObj, idx) => {
+        let optionsHTML = "";
+        qObj.o.forEach((optText, optIdx) => {
+          optionsHTML += `
+            <label class="flex items-start space-x-2 bg-white p-2.5 rounded-lg border border-amber-200 cursor-pointer hover:bg-amber-50/60 transition">
+              <input type="radio" name="quiz_q_${idx}" value="${optIdx}" class="mt-0.5 text-amber-600 focus:ring-amber-500" required>
+              <span class="text-slate-800">${optText}</span>
+            </label>
+          `;
+        });
+
+        container.innerHTML += `
+          <div class="p-3.5 bg-amber-50/40 rounded-xl border border-amber-200 space-y-2">
+            <p class="font-semibold text-amber-950">${qObj.q}</p>
+            <div class="space-y-1.5 pl-1">${optionsHTML}</div>
+            <div id="quiz-fb-${idx}" class="text-xs font-bold hidden p-2 rounded-lg"></div>
+          </div>
+        `;
+      });
+    }
+
+    // SUBMIT QUIZ MODUL 1-7 & REFLEKSI HOTS
+    function submitQuiz() {
+      const quizList = modulesData[currentModuleId].quiz;
+      const hotsAns = document.getElementById("hots-answer").value.trim();
+
+      if(!hotsAns) {
+        alert("Mohon isi jawaban pertanyaan Refleksi HOTS terlebih dahulu!");
+        return;
+      }
+
+      let score = 0;
+      quizList.forEach((qObj, idx) => {
+        const selected = document.querySelector(`input[name="quiz_q_${idx}"]:checked`);
+        const fbEl = document.getElementById(`quiz-fb-${idx}`);
+        fbEl.classList.remove("hidden");
+
+        if(selected && parseInt(selected.value) === qObj.a) {
+          score += 20;
+          fbEl.className = "text-xs font-bold p-2 rounded-lg bg-emerald-100 text-emerald-800 border border-emerald-300";
+          fbEl.innerText = "✓ Jawaban Anda Benar!";
+        } else {
+          fbEl.className = "text-xs font-bold p-2 rounded-lg bg-red-100 text-red-800 border border-red-300";
+          fbEl.innerText = `✕ Kurang Tepat. Jawaban Benar: ${qObj.o[qObj.a]}`;
+        }
+      });
+
+      const sIdx = userDatabase.findIndex(u => u.user === currentStudentUser);
+      if(sIdx !== -1) {
+        if(!userDatabase[sIdx].completedModules.includes(currentModuleId)) {
+          userDatabase[sIdx].completedModules.push(currentModuleId);
+        }
+        userDatabase[sIdx].quizScores[currentModuleId] = score;
+        userDatabase[sIdx].reflections[currentModuleId] = hotsAns;
+      }
+
+      const scoreDisplay = document.getElementById("quiz-score-display");
+      scoreDisplay.classList.remove("hidden");
+      scoreDisplay.className = "text-xs font-bold p-2.5 rounded-lg bg-emerald-100 text-emerald-900 border border-emerald-300";
+      scoreDisplay.innerText = `Nilai Asesmen Anda: ${score}/100 | Modul Berhasil Ditandai Selesai!`;
+
+      updateStudentDashboardUI();
+      renderStudentTable();
+
+      // Jika seluruh 8 modul telah tuntas, langsung tawarkan menuju halaman sertifikat
+      const currentCompleted = userDatabase[sIdx] ? userDatabase[sIdx].completedModules.length : 0;
+      if(currentCompleted === 8) {
+        setTimeout(() => {
+          alert("🎉 SELAMAT! Anda telah menuntaskan SELURUH 8 BAGIAN MODUL Pelatihan Pembelajaran Mendalam!\n\nSistem akan mengarahkan Anda ke Halaman Penyelesaian & Klaim Sertifikat.");
+          showView('completion-view');
+        }, 500);
+      } else {
+        alert(`Selamat! Anda telah menyelesaikan Bagian ${currentModuleId}.\nNilai Asesmen: ${score}/100.`);
+      }
+    }
+
+    // PENUNTASAN BAGIAN 1 (NASMIK)
+    function completeNasmikSection() {
+      const reflectionText = document.getElementById("nasmik-reflection").value.trim();
+      if(!reflectionText) {
+        alert("Mohon tuliskan refleksi awal naskah akademik terlebih dahulu!");
+        return;
+      }
+
+      const sIdx = userDatabase.findIndex(u => u.user === currentStudentUser);
+      if(sIdx !== -1) {
+        if(!userDatabase[sIdx].completedModules.includes(1)) {
+          userDatabase[sIdx].completedModules.push(1);
+        }
+        userDatabase[sIdx].reflections[1] = reflectionText;
+      }
+
+      updateStudentDashboardUI();
+      renderStudentTable();
+      alert("Bagian 1 (Naskah Akademik PM) Berhasil Ditandai Selesai!");
+      showView('student-dashboard');
+    }
+
+    // EKSPOR REKAP DATA KE EXCEL (.xlsx)
+    function exportToExcel() {
+      if (userDatabase.length === 0) {
+        alert("Belum ada data peserta untuk diekspor!");
+        return;
+      }
+
+      if (typeof XLSX === 'undefined') {
+        alert("Pustaka ekspor Excel sedang dimuat. Mohon pastikan koneksi internet aktif!");
+        return;
+      }
+
+      const excelData = userDatabase.map((siswa, index) => {
+        const scores = Object.values(siswa.quizScores);
+        const avgScore = scores.length > 0 ? (scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(1) : "-";
+
+        return {
+          "No": index + 1,
+          "Nama Lengkap Peserta": siswa.nama,
+          "User (Username)": siswa.user,
+          "Status Akses": siswa.isLoggedIn ? "Aktif Login" : "Terdaftar",
+          "Modul Diselesaikan": `${siswa.completedModules.length} / 8 Bagian`,
+          "Persentase Progres": `${Math.round((siswa.completedModules.length/8)*100)}%`,
+          "Rata-rata Nilai Asesmen": avgScore
+        };
+      });
+
+      const worksheet = XLSX.utils.json_to_sheet(excelData);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Rekap_Peserta_PM");
+
+      XLSX.writeFile(workbook, "Rekap_Pelatihan_Pembelajaran_Mendalam.xlsx");
+    }
+  </script>
+</body>
+</html>
